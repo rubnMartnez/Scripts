@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Disclaimer: you have to have go installed and 
-# assetfinder, Amass cloned before running this script
+# assetfinder, Amass, httprobe and gowitness cloned before running this script
 
 url=$1
 run_amass=false
@@ -22,6 +22,10 @@ if [! -d "$url/recon"];then
     mkdir $url/recon
 fi
 
+if [! -d "$url/recon/gowitness"];then
+    mkdir $url/recon/gowitness
+fi
+
 echo "[+] Harvesting subdomains with assetfinder..."
 
 assetfinder $url >> $url/recon/afAssets.txt
@@ -34,10 +38,12 @@ if [ "$run_amass" == true ]; then
     sort -u "$url/recon/amassAssets.txt" >> "$url/recon/assetsOnScope.txt"
 fi
 
+echo "[+] Checking if subdomains are alive with httprobe..."
 
+cat $url/recon/assetsOnScope.txt | sort -u | httprobe >> alive.txt
 
+echo "[+] Taking screenshot of the subdomains with gowitness..."
 
-
-
+gowitness file -s $url/recon/alive.txt -d $url/recon/gowitness
 
 echo "[+] Recon finished!"
