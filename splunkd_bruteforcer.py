@@ -19,7 +19,11 @@ requests.packages.urllib3.disable_warnings(
 # encode creds to base64 (since splunkd take them like that)
 def generate_creds(password):
     join_creds = f'{USERNAME}:{password}'
-    join_creds_bytes = join_creds.encode('ascii')
+    try:
+        join_creds_bytes = join_creds.encode('ascii')
+    except UnicodeEncodeError:
+        # fallback to utf-8 so non-ascii passwords won't crash the script
+        join_creds_bytes = join_creds.encode('utf-8')
 
     encoded_creds_bytes = base64.b64encode(join_creds_bytes)
     encoded_creds = encoded_creds_bytes.decode('ascii')
